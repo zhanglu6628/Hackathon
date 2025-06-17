@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能合同管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        /* 第一行：合同上传和智能识别 */
+        .first-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* 第二行：合同校验和区块链上链 */
+        .second-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border-color: #4facfe;
+        }
+
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .upload-area {
+            border: 3px dashed #4facfe;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(79, 172, 254, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            background: rgba(79, 172, 254, 0.1);
+            border-color: #00f2fe;
+        }
+
+        .upload-area.dragover {
+            background: rgba(79, 172, 254, 0.15);
+            border-color: #00f2fe;
+            transform: scale(1.02);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .result-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .status.success { background: #d4edda; color: #155724; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.processing { background: #cce7ff; color: #004085; }
+
+        .contract-list {
+            margin-top: 30px;
+        }
+
+        .contract-item {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .contract-info h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .contract-info p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .storage-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .storage-card {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .storage-card:hover {
+            border-color: #4facfe;
+            transform: translateY(-2px);
+        }
+
+        .storage-card.active {
+            border-color: #4facfe;
+            background: rgba(79, 172, 254, 0.05);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .first-row,
+            .second-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .storage-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 智能合同管理系统</h1>
+            <p>一站式合同处理解决方案</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 第一行：合同上传 + 智能识别 -->
+            <div class="first-row">
+                <!-- 合同上传 -->
+                <div class="feature-card">
+                    <h3><span class="icon">📤</span>合同上传</h3>
+                    <div class="upload-area" id="upload-area">
+                        <div style="font-size: 48px; margin-bottom: 20px;">📄</div>
+                        <p style="font-size: 18px; margin-bottom: 15px;">拖拽文件到此处或点击上传</p>
+                        <p style="color: #666;">支持 PDF, DOC, DOCX 格式</p>
+                        <input type="file" id="file-input" accept=".pdf,.doc,.docx" multiple>
+                        <button class="btn" onclick="document.getElementById('file-input').click()">选择文件</button>
+                    </div>
+                    <div class="progress-bar" id="upload-progress" style="display: none;">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+
+                <!-- 智能识别 -->
+                <div class="feature-card">
+                    <h3><span class="icon">🔍</span>智能识别</h3>
+                    <p style="margin-bottom: 20px;">AI自动识别合同类型、关键信息和条款</p>
+                    <div class="result-panel" id="recognition-result" style="display: none;">
+                        <h4>识别结果：</h4>
+                        <div id="contract-type"></div>
+                        <div id="key-info"></div>
+                    </div>
+                    <button class="btn" id="recognize-btn" onclick="recognizeContract()" disabled>开始识别</button>
+                </div>
+            </div>
+
+            <!-- 第二行：合同校验 + 区块链上链 -->
+            <div class="second-row">
+                <!-- 合同校验 -->
+                <div class="feature-card">
+                    <h3><span class="icon">✅</span>合同校验</h3>
+                    <p style="margin-bottom: 20px;">检查合同完整性、合规性和风险点</p>
+                    <div class="result-panel" id="validation-result" style="display: none;">
+                        <h4>校验结果：</h4>
+                        <div id="validation-status"></div>
+                    </div>
+                    <button class="btn" id="validate-btn" onclick="validateContract()" disabled>执行校验</button>
+                </div>
+
+                <!-- 区块链上链 -->
+                <div class="feature-card">
+                    <h3><span class="icon">⛓️</span>区块链上链</h3>
+                    <p style="margin-bottom: 20px;">将合同哈希值上链，确保数据不可篡改</p>
+                    <div class="result-panel" id="blockchain-result" style="display: none;">
+                        <h4>上链结果：</h4>
+                        <div id="blockchain-info"></div>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <select id="blockchain-network" class="btn" style="width: 200px;">
+                            <option value="ethereum">以太坊主网</option>
+                            <option value="polygon">Polygon</option>
+                            <option value="bsc">BSC</option>
+                            <option value="private">私有链</option>
+                        </select>
+                    </div>
+                    <button class="btn" id="blockchain-btn" onclick="uploadToBlockchain()" disabled>上链存证</button>
+                    <button class="btn btn-secondary" onclick="verifyOnBlockchain()" disabled id="verify-btn">链上验证</button>
+                </div>
+            </div>
+
+            <!-- 数据存储 -->
+            <div class="feature-card" style="margin-bottom: 40px;">
+                <h3><span class="icon">💾</span>数据存储</h3>
+                <div class="storage-options">
+                    <div class="storage-card" id="local-storage" onclick="selectStorage('local')">
+                        <div style="font-size: 40px; margin-bottom: 15px;">🖥️</div>
+                        <h4>本地数据库</h4>
+                        <p>安全可控，离线访问</p>
+                        <div style="margin-top: 15px;">
+                            <span class="status" id="local-status">待连接</span>
+                        </div>
+                    </div>
+                    <div class="storage-card" id="cloud-storage" onclick="selectStorage('cloud')">
+                        <div style="font-size: 40px; margin-bottom: 15px;">☁️</div>
+                        <h4>云端存储</h4>
+                        <p>多端同步，备份保障</p>
+                        <div style="margin-top: 15px;">
+                            <span class="status" id="cloud-status">待连接</span>
+                        </div>
+                    </div>
+                    <div class="storage-card" id="blockchain-storage" onclick="selectStorage('blockchain')">
+                        <div style="font-size: 40px; margin-bottom: 15px;">⛓️</div>
+                        <h4>区块链存储</h4>
+                        <p>去中心化，不可篡改</p>
+                        <div style="margin-top: 15px;">
+                            <span class="status" id="blockchain-status">待连接</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn" onclick="saveContract()">保存合同</button>
+                <button class="btn btn-secondary" onclick="syncData()">数据同步</button>
+            </div>
+
+            <!-- 合同列表 -->
+            <div class="contract-list">
+                <h3>📋 合同列表</h3>
+                <div id="contract-items"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <div id="notification-content"></div>
+    </div>
+
+    <script>
+        let uploadedFiles = [];
+        let currentContract = null;
+        let storageMode = 'local';
+        let contracts = JSON.parse(localStorage.getItem('contracts') || '[]');
+
+        // 文件上传功能
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            const progressBar = document.getElementById('upload-progress');
+            const progressFill = document.getElementById('progress-fill');
+            
+            progressBar.style.display = 'block';
+            
+            Array.from(files).forEach((file, index) => {
+                if (file.type === 'application/pdf' || 
+                    file.type === 'application/msword' || 
+                    file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                    
+                    uploadedFiles.push(file);
+                    
+                    // 模拟上传进度
+                    let progress = 0;
+                    const interval = setInterval(() => {
+                        progress += Math.random() * 30;
+                        if (progress >= 100) {
+                            progress = 100;
+                            clearInterval(interval);
+                            showNotification(`文件 "${file.name}" 上传成功！`, 'success');
+                            document.getElementById('recognize-btn').disabled = false;
+                        }
+                        progressFill.style.width = progress + '%';
+                    }, 200);
+                }
+            });
+        }
+
+        // 合同识别功能
+        function recognizeContract() {
+            if (uploadedFiles.length === 0) return;
+            
+            const resultPanel = document.getElementById('recognition-result');
+            const contractType = document.getElementById('contract-type');
+            const keyInfo = document.getElementById('key-info');
+            
+            showNotification('正在识别合同...', 'processing');
+            
+            setTimeout(() => {
+                // 模拟AI识别结果
+                const types = ['销售合同', '租赁合同', '服务合同', '采购合同', '劳动合同'];
+                const randomType = types[Math.floor(Math.random() * types.length)];
+                
+                contractType.innerHTML = `<span class="status success">合同类型: ${randomType}</span>`;
+                keyInfo.innerHTML = `
+                    <div style="margin-top: 10px;">
+                        <strong>关键信息:</strong><br>
+                        • 合同金额: ¥${(Math.random() * 1000000).toFixed(2)}<br>
+                        • 有效期: ${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')} 至 ${new Date().getFullYear() + 1}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}<br>
+                        • 甲方: 示例公司A<br>
+                        • 乙方: 示例公司B
+                    </div>
+                `;
+                
+                currentContract = {
+                    name: uploadedFiles[0].name,
+                    type: randomType,
+                    amount: (Math.random() * 1000000).toFixed(2),
+                    uploadTime: new Date().toLocaleString()
+                };
+                
+                resultPanel.style.display = 'block';
+                document.getElementById('validate-btn').disabled = false;
+                showNotification('合同识别完成！', 'success');
+            }, 2000);
+        }
+
+        // 合同校验功能
+        function validateContract() {
+            if (!currentContract) return;
+            
+            const resultPanel = document.getElementById('validation-result');
+            const validationStatus = document.getElementById('validation-status');
+            
+            showNotification('正在校验合同...', 'processing');
+            
+            setTimeout(() => {
+                const risks = ['低风险', '中风险', '高风险'];
+                const randomRisk = risks[Math.floor(Math.random() * risks.length)];
+                const issues = Math.floor(Math.random() * 3);
+                
+                let statusClass = 'success';
+                if (randomRisk === '中风险') statusClass = 'warning';
+                if (randomRisk === '高风险') statusClass = 'error';
+                
+                validationStatus.innerHTML = `
+                    <span class="status ${statusClass}">风险等级: ${randomRisk}</span>
+                    <div style="margin-top: 15px;">
+                        <strong>校验详情:</strong><br>
+                        • 合同格式: ✅ 符合标准<br>
+                        • 必填字段: ✅ 完整<br>
+                        • 法律条款: ${issues === 0 ? '✅ 合规' : '⚠️ 发现' + issues + '个问题'}<br>
+                        • 签名验证: ✅ 有效
+                    </div>
+                `;
+                
+                currentContract.riskLevel = randomRisk;
+                currentContract.validated = true;
+                
+                resultPanel.style.display = 'block';
+                document.getElementById('blockchain-btn').disabled = false;
+                showNotification('合同校验完成！', 'success');
+            }, 1500);
+        }
+
+        // 区块链相关功能
+        function uploadToBlockchain() {
+            if (!currentContract) {
+                showNotification('请先上传并识别合同！', 'error');
+                return;
+            }
+            
+            const network = document.getElementById('blockchain-network').value;
+            const resultPanel = document.getElementById('blockchain-result');
+            const blockchainInfo = document.getElementById('blockchain-info');
+            
+            showNotification('正在上链...', 'processing');
+            
+            setTimeout(() => {
+                // 模拟生成合同哈希和交易哈希
+                const contractHash = generateHash(currentContract.name + currentContract.uploadTime);
+                const txHash = generateHash(Date.now().toString());
+                const blockNumber = Math.floor(Math.random() * 1000000) + 15000000;
+                const gasUsed = Math.floor(Math.random() * 50000) + 21000;
+                
+                blockchainInfo.innerHTML = `
+                    <div style="margin-top: 10px; font-family: monospace; font-size: 14px;">
+                        <strong>上链信息:</strong><br>
+                        • 网络: ${getNetworkName(network)}<br>
+                        • 合同哈希: ${contractHash}<br>
+                        • 交易哈希: <span style="color: #4facfe;">${txHash}</span><br>
+                        • 区块号: #${blockNumber}<br>
+                        • Gas消耗: ${gasUsed}<br>
+                        • 上链时间: ${new Date().toLocaleString()}<br>
+                        • 状态: <span class="status success">已确认</span>
+                    </div>
+                `;
+                
+                currentContract.blockchain = {
+                    network: network,
+                    contractHash: contractHash,
+                    txHash: txHash,
+                    blockNumber: blockNumber,
+                    gasUsed: gasUsed,
+                    timestamp: new Date().toISOString()
+                };
+                
+                resultPanel.style.display = 'block';
+                document.getElementById('verify-btn').disabled = false;
+                showNotification('合同已成功上链！', 'success');
+            }, 3000);
+        }
+
+        // 链上验证
+        function verifyOnBlockchain() {
+            if (!currentContract || !currentContract.blockchain) {
+                showNotification('没有找到区块链信息！', 'error');
+                return;
+            }
+            
+            showNotification('正在验证链上数据...', 'processing');
+            
+            setTimeout(() => {
+                const isValid = Math.random() > 0.1; // 90%概率验证成功
+                if (isValid) {
+                    showNotification('✅ 链上验证成功！合同数据完整且未被篡改', 'success');
+                } else {
+                    showNotification('❌ 链上验证失败！检测到数据异常', 'error');
+                }
+            }, 2000);
+        }
+
+        // 生成哈希值（模拟）
+        function generateHash(input) {
+            let hash = 0;
+            for (let i = 0; i < input.length; i++) {
+                const char = input.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return '0x' + Math.abs(hash).toString(16).padStart(64, '0').substring(0, 64);
+        }
+
+        // 获取网络名称
+        function getNetworkName(network) {
+            const networks = {
+                ethereum: '以太坊主网',
+                polygon: 'Polygon网络',
+                bsc: 'BSC币安智能链',
+                private: '私有链'
+            };
+            return networks[network] || network;
+        }
+
+        // 存储选择
+        function selectStorage(mode) {
+            storageMode = mode;
+            document.querySelectorAll('.storage-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.getElementById(mode + '-storage').classList.add('active');
+            
+            // 模拟连接状态
+            setTimeout(() => {
+                document.getElementById(mode + '-status').textContent = '已连接';
+                document.getElementById(mode + '-status').className = 'status success';
+                
+                if (mode === 'blockchain') {
+                    showNotification('已连接到区块链网络', 'success');
+                }
+            }, 500);
+        }
+
+        // 保存合同
+        function saveContract() {
+            if (!currentContract) {
+                showNotification('请先上传并识别合同！', 'error');
+                return;
+            }
+            
+            currentContract.id = Date.now();
+            currentContract.storageMode = storageMode;
+            contracts.push(currentContract);
+            
+            if (storageMode === 'local') {
+                localStorage.setItem('contracts', JSON.stringify(contracts));
+                showNotification('合同已保存到本地数据库！', 'success');
+            } else if (storageMode === 'cloud') {
+                // 模拟云存储
+                showNotification('合同已保存到云端！', 'success');
+            } else if (storageMode === 'blockchain') {
+                // 模拟区块链存储
+                showNotification('合同已保存到区块链！智能合约地址: 0x' + Math.random().toString(16).substring(2, 42), 'success');
+            }
+            
+            updateContractList();
+            currentContract = null;
+        }
+
+        // 数据同步
+        function syncData() {
+            showNotification('正在同步数据...', 'processing');
+            setTimeout(() => {
+                showNotification('数据同步完成！', 'success');
+            }, 2000);
+        }
+
+        // 更新合同列表
+        function updateContractList() {
+            const containerDiv = document.getElementById('contract-items');
+            containerDiv.innerHTML = '';
+            
+            contracts.forEach(contract => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'contract-item';
+                
+                let storageInfo = '';
+                if (contract.storageMode === 'blockchain' && contract.blockchain) {
+                    storageInfo = `
+                        <span class="status">区块链存储</span>
+                        <span class="status" style="font-family: monospace; font-size: 12px;" title="交易哈希">
+                            ${contract.blockchain.txHash.substring(0, 10)}...
+                        </span>
+                    `;
+                } else {
+                    storageInfo = `<span class="status">${contract.storageMode === 'local' ? '本地存储' : contract.storageMode === 'cloud' ? '云端存储' : '区块链存储'}</span>`;
+                }
+                
+                itemDiv.innerHTML = `
+                    <div class="contract-info">
+                        <h4>${contract.name}</h4>
+                        <p>类型: ${contract.type} | 金额: ¥${contract.amount} | 上传时间: ${contract.uploadTime}</p>
+                        <span class="status ${contract.riskLevel === '低风险' ? 'success' : contract.riskLevel === '中风险' ? 'warning' : 'error'}">${contract.riskLevel}</span>
+                        ${storageInfo}
+                        ${contract.blockchain ? '<span class="status success">已上链</span>' : ''}
+                    </div>
+                    <div>
+                        ${contract.blockchain ? '<button class="btn btn-secondary" onclick="verifyContract(' + contract.id + ')">链上验证</button>' : ''}
+                        <button class="btn" onclick="downloadContract(${contract.id})">下载</button>
+                        <button class="btn btn-secondary" onclick="deleteContract(${contract.id})">删除</button>
+                    </div>
+                `;
+                containerDiv.appendChild(itemDiv);
+            });
+        }
+
+        // 验证合同（从列表）
+        function verifyContract(id) {
+            const contract = contracts.find(c => c.id === id);
+            if (contract && contract.blockchain) {
+                showNotification('正在验证链上数据...', 'processing');
+                setTimeout(() => {
+                    const isValid = Math.random() > 0.1;
+                    if (isValid) {
+                        showNotification(`✅ "${contract.name}" 链上验证成功！`, 'success');
+                    } else {
+                        showNotification(`❌ "${contract.name}" 链上验证失败！`, 'error');
+                    }
+                }, 2000);
+            } else {
+                showNotification('该合同未上链！', 'warning');
+            }
+        }
+
+        // 下载合同
+        function downloadContract(id) {
+            const contract = contracts.find(c => c.id === id);
+            if (contract) {
+                showNotification(`正在下载 "${contract.name}"...`, 'processing');
+                setTimeout(() => {
+                    showNotification('下载完成！', 'success');
+                }, 1000);
+            }
+        }
+
+        // 删除合同
+        function deleteContract(id) {
+            if (confirm('确定要删除这个合同吗？')) {
+                contracts = contracts.filter(c => c.id !== id);
+                localStorage.setItem('contracts', JSON.stringify(contracts));
+                updateContractList();
+                showNotification('合同已删除！', 'success');
+            }
+        }
+
+        // 通知功能
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            const content = document.getElementById('notification-content');
+            
+            content.innerHTML = `
+                <div style="
