@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Contract Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .first-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .second-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border-color: #4facfe;
+        }
+
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .upload-area {
+            border: 3px dashed #4facfe;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(79, 172, 254, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            background: rgba(79, 172, 254, 0.1);
+            border-color: #00f2fe;
+        }
+
+        .upload-area.dragover {
+            background: rgba(79, 172, 254, 0.15);
+            border-color: #00f2fe;
+            transform: scale(1.02);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+            margin: 5px 3px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .result-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .status.success { background: #d4edda; color: #155724; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.processing { background: #cce7ff; color: #004085; }
+
+        .contract-list {
+            margin-top: 30px;
+        }
+
+        .contract-item {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .contract-info h4 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .contract-info p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .storage-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .storage-card {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .storage-card:hover {
+            border-color: #4facfe;
+            transform: translateY(-2px);
+        }
+
+        .storage-card.active {
+            border-color: #4facfe;
+            background: rgba(79, 172, 254, 0.05);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .uploaded-files {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: white;
+            transition: all 0.2s ease;
+        }
+
+        .file-item:hover {
+            background: #f8f9ff;
+            border-color: #4facfe;
+        }
+
+        .file-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .file-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .file-icon {
+            font-size: 20px;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .file-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .files-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .files-title {
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .select-all-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .first-row,
+            .second-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .storage-options {
+                flex-direction: column;
+            }
+
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .file-controls {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 Smart Contract Management System</h1>
+            <p>One-stop contract processing solution</p>
+        </div>
+
+        <div class="main-content">
+            <!-- First Row: Contract Upload + Smart Recognition -->
+            <div class="first-row">
+                <!-- Contract Upload -->
+                <div class="feature-card">
+                    <h3><span class="icon">📤</span>Contract Upload</h3>
+                    <div class="upload-area" id="upload-area">
+                        <div style="font-size: 48px; margin-bottom: 20px;">📄</div>
+                        <p style="font-size: 18px; margin-bottom: 15px;">Drag & drop files here or click to upload</p>
+                        <p style="color: #666;">Supports PDF, DOC, DOCX formats</p>
+                        <input type="file" id="file-input" accept=".pdf,.doc,.docx" multiple>
+                        <button class="btn" onclick="document.getElementById('file-input').click()">Select Files</button>
+                        
+                        <div id="uploaded-files-display" style="display:none; margin-top:20px;">
+                            <div class="files-header">
+                                <div class="files-title">
+                                    📁 Selected Files (<span id="file-count">0</span>)
+                                </div>
+                                <div class="select-all-container">
+                                    <input type="checkbox" id="select-all" class="file-checkbox" onchange="toggleSelectAll()">
+                                    <label for="select-all" style="font-size: 14px; color: #666;">Select All</label>
+                                </div>
+                            </div>
+                            <div id="file-list"></div>
+                            <div style="margin-top: 15px; text-align: right;">
+                                <button class="btn btn-danger btn-small" onclick="deleteSelectedFiles()" id="delete-selected-btn" disabled>Delete Selected</button>
+                                <button class="btn btn-danger btn-small" onclick="deleteAllFiles()">Delete All</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress-bar" id="upload-progress" style="display: none;">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+
+                <!-- Smart Recognition -->
+                <div class="feature-card">
+                    <h3><span class="icon">🔍</span>Smart Recognition</h3>
+                    <p style="margin-bottom: 20px;">AI automatically identifies contract type, key information and clauses</p>
+                    <div class="result-panel" id="recognition-result" style="display: none;">
+                        <h4>Recognition Results:</h4>
+                        <div id="contract-type"></div>
+                        <div id="key-info"></div>
+                    </div>
+                    <button class="btn" id="recognize-btn" onclick="recognizeContract()" disabled>Start Recognition</button>
+                </div>
+            </div>
+
+            <!-- Second Row: Contract Validation + Blockchain -->
+            <div class="second-row">
+                <!-- Contract Validation -->
+                <div class="feature-card">
+                    <h3><span class="icon">✅</span>Contract Validation</h3>
+                    <p style="margin-bottom: 20px;">Check contract completeness, compliance and risk points</p>
+                    <div class="result-panel" id="validation-result" style="display: none;">
+                        <h4>Validation Results:</h4>
+                        <div id="validation-status"></div>
+                    </div>
+                    <button class="btn" id="validate-btn" onclick="validateContract()" disabled>Validate Contract</button>
+                </div>
+
+                <!-- Blockchain -->
+                <div class="feature-card">
+                    <h3><span class="icon">⛓️</span>Blockchain</h3>
+                    <p style="margin-bottom: 20px;">Store contract hash on blockchain for tamper-proof verification</p>
+                    <div class="result-panel" id="blockchain-result" style="display: none;">
+                        <h4>Blockchain Results:</h4>
+                        <div id="blockchain-info"></div>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <select id="blockchain-network" class="btn" style="width: 200px;">
+                            <option value="ethereum">Ethereum Mainnet</option>
+                            <option value="polygon">Polygon</option>
+                            <option value="bsc">BSC</option>
+                            <option value="private">Private Chain</option>
+                        </select>
+                    </div>
+                    <button class="btn" id="blockchain-btn" onclick="uploadToBlockchain()" disabled>Store on Blockchain</button>
+                    <button class="btn btn-secondary" onclick="verifyOnBlockchain()" disabled id="verify-btn">Verify on Chain</button>
+                </div>
+            </div>
+
+            <!-- Data Storage -->
+            <div class="feature-card" style="margin-bottom: 40px;">
+                <h3><span class="icon">💾</span>Data Storage</h3>
+                <div class="storage-options">
+                    <div class="storage-card active" id="local-storage" onclick="selectStorage('local')">
+                        <div style="font-size: 40px; margin-bottom: 15px;">🖥️</div>
+                        <h4>Local Database</h4>
+                        <p>Secure and controllable, offline access</p>
+                        <div style="margin-top: 15px;">
+                            <span class="status success" id="local-status">Connected</span>
+                        </div>
+                    </div>
+                    <div class="storage-card" id="cloud-storage" onclick="selectStorage('cloud')">
+                        <div style="font-size: 40px; margin-bottom: 15px;">☁️</div>
+                        <h4>Cloud Storage</h4>
+                        <p>Multi-device sync, backup guarantee</p>
+                        <div style="margin-top: 15px;">
+                            <span class="status" id="cloud-status">Pending</span>
+                        </div>
+                    </div>
+                    <div class="storage-card" id="blockchain-storage" onclick="selectStorage('blockchain')">
+                        <div style="font-size: 40px; margin-bottom: 15px;">⛓️</div>
+                        <h4>Blockchain Storage</h4>
+                        <p>Decentralized, tamper-proof</p>
+                        <div style="margin-top: 15px;">
+                            <span class="status" id="blockchain-status">Pending</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn" onclick="saveContract()" id="save-btn" disabled>Save Contract</button>
+                <button class="btn btn-secondary" onclick="syncData()">Sync Data</button>
+            </div>
+
+            <!-- Contract List -->
+            <div class="contract-list">
+                <h3>📋 Contract List</h3>
+                <div id="contract-items"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <div id="notification-content"></div>
+    </div>
+
+    <script>
+        let uploadedFiles = [];
+        let currentContract = null;
+        let storageMode = 'local';
+        let contracts = [];
+        
+        // Load contract data from session storage on initialization
+        function initializeApp() {
+            try {
+                const savedContracts = sessionStorage.getItem('contracts');
+                if (savedContracts) {
+                    contracts = JSON.parse(savedContracts);
+                }
+            } catch (e) {
+                console.log('Failed to load saved contract data');
+                contracts = [];
+            }
+            updateContractList();
+        }
+
+        // File upload functionality
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        uploadArea.addEventListener('click', (e) => {
+            if (!e.target.closest('.files-header') && !e.target.closest('#file-list') && !e.target.closest('button')) {
+                fileInput.click();
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            const progressBar = document.getElementById('upload-progress');
+            const progressFill = document.getElementById('progress-fill');
+            
+            progressBar.style.display = 'block';
+            let validFiles = [];
+            
+            Array.from(files).forEach((file) => {
+                if (file.type === 'application/pdf' || 
+                    file.type === 'application/msword' || 
+                    file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                    
+                    // Check for duplicate files
+                    const existingFile = uploadedFiles.find(f => f.name === file.name);
+                    if (!existingFile) {
+                        validFiles.push(file);
+                        uploadedFiles.push({
+                            file: file,
+                            name: file.name,
+                            size: file.size,
+                            selected: false,
+                            id: Date.now() + Math.random()
+                        });
+                    } else {
+                        showNotification(`File "${file.name}" already exists`, 'warning');
+                    }
+                } else {
+                    showNotification(`File "${file.name}" format not supported`, 'error');
+                }
+            });
+            
+            if (validFiles.length === 0) {
+                progressBar.style.display = 'none';
+                return;
+            }
+            
+            // Simulate upload progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15 + 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    updateFileDisplay();
+                    updateButtonStates();
+                    
+                    showNotification(`Successfully uploaded ${validFiles.length} files!`, 'success');
+                }
+                progressFill.style.width = progress + '%';
+            }, 100);
+        }
+
+        function updateFileDisplay() {
+            const uploadedFilesDisplay = document.getElementById('uploaded-files-display');
+            const fileList = document.getElementById('file-list');
+            const fileCount = document.getElementById('file-count');
+            
+            if (uploadedFiles.length === 0) {
+                uploadedFilesDisplay.style.display = 'none';
+                return;
+            }
+            
+            uploadedFilesDisplay.style.display = 'block';
+            fileCount.textContent = uploadedFiles.length;
+            
+            fileList.innerHTML = '';
+            uploadedFiles.forEach((fileObj, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <input type="checkbox" class="file-checkbox" id="file-${fileObj.id}" 
+                               ${fileObj.selected ? 'checked' : ''} 
+                               onchange="toggleFileSelection(${index})">
+                        <div class="file-icon">📄</div>
+                        <div class="file-details">
+                            <div class="file-name">${fileObj.name}</div>
+                            <div class="file-size">(${(fileObj.size / 1024).toFixed(1)} KB)</div>
+                        </div>
+                    </div>
+                    <div class="file-controls">
+                        <button class="btn btn-danger btn-small" onclick="removeFile(${index})">Delete</button>
+                    </div>
+                `;
+                fileList.appendChild(fileItem);
+            });
+            
+            updateSelectAllState();
+        }
+
+        function toggleFileSelection(index) {
+            uploadedFiles[index].selected = !uploadedFiles[index].selected;
+            updateSelectAllState();
+            updateDeleteSelectedButton();
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('select-all');
+            const isChecked = selectAll.checked;
+            
+            uploadedFiles.forEach(fileObj => {
+                fileObj.selected = isChecked;
+            });
+            
+            // Update all file checkboxes
+            uploadedFiles.forEach((fileObj, index) => {
+                const checkbox = document.getElementById(`file-${fileObj.id}`);
+                if (checkbox) {
+                    checkbox.checked = isChecked;
+                }
+            });
+            
+            updateDeleteSelectedButton();
+        }
+
+        function updateSelectAllState() {
+            const selectAll = document.getElementById('select-all');
+            const selectedCount = uploadedFiles.filter(f => f.selected).length;
+            
+            if (selectedCount === 0) {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            } else if (selectedCount === uploadedFiles.length) {
+                selectAll.checked = true;
+                selectAll.indeterminate = false;
+            } else {
+                selectAll.checked = false;
+                selectAll.indeterminate = true;
+            }
+            
+            updateDeleteSelectedButton();
+        }
+
+        function updateDeleteSelectedButton() {
+            const deleteSelectedBtn = document.getElementById('delete-selected-btn');
+            const selectedCount = uploadedFiles.filter(f => f.selected).length;
+            deleteSelectedBtn.disabled = selectedCount === 0;
+            deleteSelectedBtn.textContent = selectedCount > 0 ? `Delete Selected (${selectedCount})` : 'Delete Selected';
+        }
+
+        function removeFile(index) {
+            const fileName = uploadedFiles[index].name;
+            uploadedFiles.splice(index, 1);
+            updateFileDisplay();
+            updateButtonStates();
+            showNotification(`Deleted file: ${fileName}`, 'success');
+        }
+
+        function deleteSelectedFiles() {
+            const selectedFiles = uploadedFiles.filter(f => f.selected);
+            if (selectedFiles.length === 0) {
+                showNotification('Please select files to delete', 'warning');
+                return;
+            }
+            
+            if (confirm(`Are you sure you want to delete ${selectedFiles.length} selected files?`)) {
+                uploadedFiles = uploadedFiles.filter(f => !f.selected);
+                updateFileDisplay();
+                updateButtonStates();
+                showNotification(`Deleted ${selectedFiles.length} files`, 'success');
+            }
+        }
+
+        function deleteAllFiles() {
+            if (uploadedFiles.length === 0) {
+                showNotification('No files to delete', 'warning');
+                return;
+            }
+            
+            if (confirm(`Are you sure you want to delete all ${uploadedFiles.length} files?`)) {
+                const count = uploadedFiles.length;
+                uploadedFiles = [];
+                updateFileDisplay();
+                updateButtonStates();
+                showNotification(`Deleted all ${count} files`, 'success');
+            }
+        }
+
+        function updateButtonStates() {
+            const hasFiles = uploadedFiles.length > 0;
+            document.getElementById('recognize-btn').disabled = !hasFiles;
+            document.getElementById('save-btn').disabled = !hasFiles;
+        }
+
+        // Contract recognition
+        function recognizeContract() {
+            if (uploadedFiles.length === 0) {
+                showNotification('Please upload contract files first!', 'error');
+                return;
+            }
+            
+            const resultPanel = document.getElementById('recognition-result');
+            const contractType = document.getElementById('contract-type');
+            const keyInfo = document.getElementById('key-info');
+            
+            showNotification('Recognizing contract...', 'processing');
+            
+            setTimeout(() => {
+                // Simulate AI recognition results
+                const types = ['Sales Contract', 'Lease Agreement', 'Service Contract', 'Procurement Contract', 'Employment Contract'];
+                const randomType = types[Math.floor(Math.random() * types.length)];
+                const amount = (Math.random() * 1000000 + 50000).toFixed(2);
+                
+                contractType.innerHTML = `<span class="status success">Contract Type: ${randomType}</span>`;
+                keyInfo.innerHTML = `
+                    <div style="margin-top: 10px;">
+                        <strong>Key Information:</strong><br>
+                        • Contract Amount: $${amount}<br>
+                        • Validity: ${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')} to ${new Date().getFullYear() + 1}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}<br>
+                        • Party A: Sample Company A<br>
+                        • Party B: Sample Company B
+                    </div>
+                `;
+                
+                currentContract = {
+                    name: uploadedFiles[0].name,
+                    type: randomType,
+                    amount: amount,
+                    uploadTime: new Date().toLocaleString(),
+                    files: uploadedFiles.map(f => ({ name: f.name, size: f.size }))
+                };
+                
+                resultPanel.style.display = 'block';
+                document.getElementById('validate-btn').disabled = false;
+                showNotification('Contract recognition complete!', 'success');
+            }, 2000);
+        }
+
+        // Contract validation
+        function validateContract() {
+            if (!currentContract) {
+                showNotification('Please recognize contract first!', 'error');
+                return;
+            }
+            
+            const resultPanel = document.getElementById('validation-result');
+            const validationStatus = document.getElementById('validation-status');
+            
+            showNotification('Validating contract...', 'processing');
+            
+            setTimeout(() => {
+                const risks = ['Low Risk', 'Medium Risk', 'High Risk'];
+                const randomRisk = risks[Math.floor(Math.random() * risks.length)];
+                let statusClass;
+                if (randomRisk === 'Low Risk') {
+                    statusClass = 'success';
+                } else if (randomRisk === 'Medium Risk') {
+                    statusClass = 'warning';
+                } else {
+                    statusClass = 'error';
+                }
+                
+                validationStatus.innerHTML = `<span class="status ${statusClass}">${randomRisk}</span>`;
+                validationStatus.innerHTML += `<div style="margin-top: 10px;">
+                    <strong>Validation Results:</strong><br>
+                    • Completeness: ${randomRisk === 'High Risk' ? 'Incomplete' : 'Complete'}<br>
+                    • Compliance: ${randomRisk === 'High Risk' ? 'Non-compliant' : 'Compliant'}<br>
+                    • Risk Points: ${randomRisk === 'Low Risk' ? 'None' : (randomRisk === 'Medium Risk' ? 'Some ambiguous clauses' : 'Multiple missing clauses')}
+                </div>`;
+                
+                resultPanel.style.display = 'block';
+                document.getElementById('blockchain-btn').disabled = false;
+                document.getElementById('verify-btn').disabled = false;
+                showNotification('Contract validation complete!', 'success');
+            }, 2000);
+        }
+        
+        function selectStorage(mode) {
+            storageMode = mode;
+            document.getElementById('local-storage').classList.toggle('active', mode === 'local');
+            document.getElementById('cloud-storage').classList.toggle('active', mode === 'cloud');
+            document.getElementById('blockchain-storage').classList.toggle('active', mode === 'blockchain');
+            
+            // Update status
+            if (mode === 'cloud') {
+                document.getElementById('cloud-status').className = 'status success';
+                document.getElementById('cloud-status').textContent = 'Connected';
+            } else if (mode === 'blockchain') {
+                document.getElementById('blockchain-status').className = 'status success';
+                document.getElementById('blockchain-status').textContent = 'Connected';
+            }
+        }
+        
+        function saveContract() {
+            if (!currentContract) {
+                showNotification('No contract to save!', 'error');
+                return;
+            }
+            
+            // Add to contract list
+            contracts.push(currentContract);
+            sessionStorage.setItem('contracts', JSON.stringify(contracts));
+            updateContractList();
+            showNotification('Contract saved successfully!', 'success');
+        }
+        
+        function syncData() {
+            showNotification('Syncing data...', 'processing');
+            setTimeout(() => {
+                showNotification('Data sync complete!', 'success');
+            }, 1500);
+        }
+        
+        function updateContractList() {
+            const contractItems = document.getElementById('contract-items');
+            contractItems.innerHTML = '';
+            
+            if (contracts.length === 0) {
+                contractItems.innerHTML = '<div class="contract-item"><div class="contract-info"><h4>No Contracts</h4><p>Please upload and save contracts</p></div></div>';
+                return;
+            }
+            
+            contracts.forEach(contract => {
+                const contractItem = document.createElement('div');
+                contractItem.className = 'contract-item';
+                contractItem.innerHTML = `
+                    <div class="contract-info">
+                        <h4>${contract.name}</h4>
+                        <p>Type: ${contract.type} | Amount: $${contract.amount} | Uploaded: ${contract.uploadTime}</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-small" onclick="viewContract('${contract.name}')">View</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteContract('${contract.name}')">Delete</button>
+                    </div>
+                `;
+                contractItems.appendChild(contractItem);
+            });
+        }
+        
+        function viewContract(name) {
+            const contract = contracts.find(c => c.name === name);
+            if (contract) {
+                alert(`View Contract: ${name}\nType: ${contract.type}\nAmount: ${contract.amount}`);
+            }
+        }
+        
+        function deleteContract(name) {
+            if (confirm(`Are you sure you want to delete contract "${name}"?`)) {
+                contracts = contracts.filter(c => c.name !== name);
+                sessionStorage.setItem('contracts', JSON.stringify(contracts));
+                updateContractList();
+                showNotification(`Contract "${name}" deleted`, 'success');
+            }
+        }
+        
+        function uploadToBlockchain() {
+            const network = document.getElementById('blockchain-network').value;
+            const blockchainInfo = document.getElementById('blockchain-info');
+            const blockchainResult = document.getElementById('blockchain-result');
+            
+            showNotification('Storing on blockchain...', 'processing');
+            
+            setTimeout(() => {
+                const txHash = '0x' + Math.random().toString(16).substr(2, 64);
+                blockchainInfo.innerHTML = `
+                    <span class="status success">Successfully stored!</span>
+                    <div style="margin-top: 10px;">
+                        <strong>Transaction Hash:</strong> ${txHash}<br>
+                        <strong>Network:</strong> ${document.getElementById('blockchain-network').options[document.getElementById('blockchain-network').selectedIndex].text}
+                    </div>
+                `;
+                blockchainResult.style.display = 'block';
+                showNotification('Successfully stored on blockchain!', 'success');
+            }, 3000);
+        }
+        
+        function verifyOnBlockchain() {
+            showNotification('Verifying on blockchain...', 'processing');
+            setTimeout(() => {
+                showNotification('Verification successful, contract hash matches!', 'success');
+            }, 2000);
+        }
+        
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            const content = document.getElementById('notification-content');
+            content.innerHTML = message;
+            notification.className = 'notification';
+            notification.classList.add('show');
+            notification.classList.add(type);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.classList.remove(type);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Initialize
+        window.onload = function() {
+            initializeApp();
+            selectStorage('local');
+        };
+    </script>
+</body>
+</html>
